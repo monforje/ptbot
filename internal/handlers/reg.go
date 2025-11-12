@@ -13,7 +13,12 @@ import (
 
 func RegHandler(db *mongo.Database) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if c.Sender() == nil {
+			return c.Send("unable to retrieve user information")
+		}
 
 		now := time.Now()
 		user := model.User{

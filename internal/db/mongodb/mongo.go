@@ -2,9 +2,11 @@ package mongodb
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -35,8 +37,29 @@ func New(dbURL string) (*Mongo, error) {
 
 	m.DB = client.Database("ptbot")
 
+	if err := m.createIndexes(ctx); err != nil {
+		return nil, fmt.Errorf("failed to create indexes: %v", err)
+	}
+
 	log.Println("connected to mongodb: ptbot")
 	return m, nil
+}
+
+func (m *Mongo) createIndexes(ctx context.Context) error {
+	usersCol := m.DB.Collection("users")
+
+	indexModel := mongo.IndexModel{
+		Keys:    bson.D{{Key: "tg_id", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := usersCol.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		return err
+	}
+
+	log.Println("indexes created successfully")
+	return nil
 }
 
 func (m *Mongo) Stop() error {
