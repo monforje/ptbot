@@ -20,6 +20,16 @@ func StartHandler(db *mongo.Database) tele.HandlerFunc {
 
 		col := db.Collection("users")
 		result := tgsvc.Start(ctx, col, c.Sender().ID)
-		return c.Send(result)
+
+		if !result.IsRegistered {
+			markup := &tele.ReplyMarkup{}
+			btnReg := markup.Data("📝 Зарегистрироваться", "reg_button")
+			markup.Inline(
+				markup.Row(btnReg),
+			)
+			return c.Send(result.Message, markup)
+		}
+
+		return c.Send(result.Message)
 	}
 }

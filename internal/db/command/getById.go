@@ -19,7 +19,7 @@ func GetByID[T any](ctx context.Context,
 	err := col.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return result, fmt.Errorf("document not found")
+			return result, mongo.ErrNoDocuments
 		}
 		return result, fmt.Errorf("failed to find document: %w", err)
 	}

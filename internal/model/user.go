@@ -12,6 +12,7 @@ type User struct {
 	Username  string        `bson:"username"`
 	FirstName string        `bson:"first_name"`
 	LastName  string        `bson:"last_name"`
+	Phone     string        `bson:"phone"`
 	CreatedAt time.Time     `bson:"created_at"`
 	UpdatedAt time.Time     `bson:"updated_at"`
 }

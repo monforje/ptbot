@@ -28,6 +28,8 @@ func New(token string, db *mongo.Database) (*Bot, error) {
 
 	b.Handle("/reg", handlers.RegHandler(db))
 	b.Handle("/start", handlers.StartHandler(db))
+	b.Handle(tele.OnContact, handlers.RegHandler(db))
+	b.Handle(&tele.Btn{Unique: "reg_button"}, handlers.RegHandler(db))
 
 	bot.b = b
 

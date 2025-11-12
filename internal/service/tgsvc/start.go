@@ -10,10 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func Start(ctx context.Context, col *mongo.Collection, tgid int64) string {
+type StartResponse struct {
+	Message      string
+	IsRegistered bool
+}
+
+func Start(ctx context.Context, col *mongo.Collection, tgid int64) StartResponse {
 	user, err := command.GetByID[model.User](ctx, col, tgid)
+
 	if err != nil {
-		return "Hi! Please register first with /reg"
+		return StartResponse{
+			Message:      "Привет, друг 🖖\n\nЧтобы начать пользоваться ботом, пожалуйста, зарегистрируйся\n\nИспользуй команду /reg или нажми на кнопку ниже 👇",
+			IsRegistered: false,
+		}
 	}
 
 	name := user.FirstName
@@ -21,8 +30,11 @@ func Start(ctx context.Context, col *mongo.Collection, tgid int64) string {
 		name = user.Username
 	}
 	if name == "" {
-		name = "friend"
+		name = "друг"
 	}
 
-	return fmt.Sprintf("Hi, %s", name)
+	return StartResponse{
+		Message:      fmt.Sprintf("Привет, %s", name),
+		IsRegistered: true,
+	}
 }
