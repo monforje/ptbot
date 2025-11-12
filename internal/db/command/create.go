@@ -2,11 +2,13 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"ptbot/pkg/erro"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
+
+var ErrAlreadyExists = errors.New("document already exists")
 
 type TelegramDocument interface {
 	GetTgID() int64
@@ -18,10 +20,10 @@ func Create[T TelegramDocument](ctx context.Context,
 ) error {
 	_, err := GetByID[T](ctx, col, doc.GetTgID())
 	if err == nil {
-		return erro.ErrDocumentExists
+		return ErrAlreadyExists
 	}
 
-	if err != erro.ErrDocumentNotFound {
+	if err != mongo.ErrNoDocuments {
 		return fmt.Errorf("failed to check document existence: %w", err)
 	}
 

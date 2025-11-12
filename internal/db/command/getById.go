@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"ptbot/pkg/erro"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -20,7 +19,7 @@ func GetByID[T any](ctx context.Context,
 	err := col.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return result, erro.ErrDocumentNotFound
+			return result, fmt.Errorf("document not found")
 		}
 		return result, fmt.Errorf("failed to find document: %w", err)
 	}

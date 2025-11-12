@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"ptbot/internal/db/command"
-	"ptbot/pkg/erro"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -12,7 +11,7 @@ import (
 func Reg[T command.TelegramDocument](ctx context.Context, col *mongo.Collection, doc T) string {
 	err := command.Create(ctx, col, doc)
 	if err != nil {
-		if errors.Is(err, erro.ErrDocumentExists) {
+		if errors.Is(err, command.ErrAlreadyExists) {
 			return "user already registered"
 		}
 		return "registration failed"
