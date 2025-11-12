@@ -20,7 +20,7 @@ func Start(ctx context.Context, col *mongo.Collection, tgid int64) StartResponse
 
 	if err != nil {
 		return StartResponse{
-			Message:      "Привет, друг 🖖\n\nЧтобы начать пользоваться ботом, пожалуйста, зарегистрируйся\n\nИспользуй команду /reg или нажми на кнопку ниже 👇",
+			Message:      "Привет, друг 🖖\n\nЧтобы начать пользоваться ботом, пожалуйста, зарегистрируйся\n\nИспользуй команду /reg или нажми на кнопку ниже 👇\n\nℹ️ Узнать больше о боте: /info",
 			IsRegistered: false,
 		}
 	}
@@ -34,7 +34,7 @@ func Start(ctx context.Context, col *mongo.Collection, tgid int64) StartResponse
 	}
 
 	return StartResponse{
-		Message:      fmt.Sprintf("Привет, %s", name),
+		Message:      fmt.Sprintf("Привет, %s 👋\n\nТы уже зарегистрирован!\n\nℹ️ Узнать больше о боте: /info", name),
 		IsRegistered: true,
 	}
 }

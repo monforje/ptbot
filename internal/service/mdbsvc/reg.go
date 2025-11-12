@@ -27,21 +27,21 @@ func Reg(ctx context.Context, col *mongo.Collection, doc model.User, c tele.Cont
 			existingUser, getErr := command.GetByID[model.User](ctx, col, doc.TgID)
 			if getErr == nil {
 				return RegResult{
-					Message:       "Пользователь уже зарегистрирован",
+					Message:       "Пользователь уже зарегистрирован ✌️",
 					StickerMsg:    nil,
 					User:          &existingUser,
 					AlreadyExists: true,
 				}
 			}
 			return RegResult{
-				Message:       "Пользователь уже зарегистрирован",
+				Message:       "Пользователь уже зарегистрирован ✌️",
 				StickerMsg:    nil,
 				User:          nil,
 				AlreadyExists: true,
 			}
 		}
 		return RegResult{
-			Message:       "Регистрация не удалась",
+			Message:       "Регистрация не удалась 😭",
 			StickerMsg:    nil,
 			User:          nil,
 			AlreadyExists: false,
@@ -58,7 +58,7 @@ func Reg(ctx context.Context, col *mongo.Collection, doc model.User, c tele.Cont
 	time.Sleep(5 * time.Second)
 
 	return RegResult{
-		Message:       "Регистрация прошла успешно",
+		Message:       "Регистрация прошла успешно 👌",
 		StickerMsg:    stickerMsg,
 		User:          &doc,
 		AlreadyExists: false,
