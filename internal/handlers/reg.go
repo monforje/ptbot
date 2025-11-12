@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"ptbot/internal/db/command"
 	"ptbot/internal/model"
 	"ptbot/internal/service/mdbsvc"
 	"time"
@@ -18,6 +19,21 @@ func RegHandler(db *mongo.Database) tele.HandlerFunc {
 
 		if c.Sender() == nil {
 			return c.Send("Не удалось получить информацию о пользователе")
+		}
+
+		// Проверяем, зарегистрирован ли пользователь
+		col := db.Collection("users")
+		existingUser, err := command.GetByID[model.User](ctx, col, c.Sender().ID)
+		if err == nil {
+			// Пользователь уже зарегистрирован
+			fullName := fmt.Sprintf("%s %s", existingUser.FirstName, existingUser.LastName)
+			userInfo := fmt.Sprintf("Вы уже зарегистрированы ✌️\n\n```\nИмя: %s\nНикнейм: @%s\nАйДи: %d\nТелефон: %s\n```",
+				fullName, existingUser.Username, existingUser.TgID, existingUser.Phone)
+			return c.Send(userInfo, &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+		}
+		if err != mongo.ErrNoDocuments {
+			// Ошибка при проверке, но не "не найдено"
+			return c.Send("Ошибка при проверке регистрации")
 		}
 
 		if c.Callback() != nil || (c.Message() != nil && c.Message().Contact == nil && c.Text() == "/reg") {
@@ -57,8 +73,6 @@ func RegHandler(db *mongo.Database) tele.HandlerFunc {
 			CreatedAt: now,
 			UpdatedAt: now,
 		}
-
-		col := db.Collection("users")
 
 		markup := &tele.ReplyMarkup{
 			RemoveKeyboard: true,

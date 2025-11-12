@@ -13,4 +13,5 @@ type Photo struct {
 	SendDate     time.Time     `bson:"send_date"`
 	Size         int64         `bson:"size"`
 	Name         string        `bson:"name"`
+	Tags         []string      `bson:"tags"`
 }
