@@ -33,7 +33,6 @@ func New(token string, db *mongo.Database) (*Bot, error) {
 	b.Handle(&tele.Btn{Unique: "reg_button"}, handlers.RegHandler(db))
 	b.Handle("/info", handlers.InfoHandler())
 
-	// Обработчики, требующие регистрации
 	authMiddleware := middleware.RequireRegistration(db)
 	b.Handle(tele.OnPhoto, handlers.UploadHandler(db), authMiddleware)
 	b.Handle(tele.OnText, func(c tele.Context) error {

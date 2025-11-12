@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"ptbot/internal/db/command"
 	"ptbot/internal/model"
-	"ptbot/internal/service/mdbsvc"
+	"ptbot/internal/service/reg"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -21,18 +21,15 @@ func RegHandler(db *mongo.Database) tele.HandlerFunc {
 			return c.Send("Не удалось получить информацию о пользователе")
 		}
 
-		// Проверяем, зарегистрирован ли пользователь
 		col := db.Collection("users")
 		existingUser, err := command.GetByID[model.User](ctx, col, c.Sender().ID)
 		if err == nil {
-			// Пользователь уже зарегистрирован
 			fullName := fmt.Sprintf("%s %s", existingUser.FirstName, existingUser.LastName)
-			userInfo := fmt.Sprintf("Вы уже зарегистрированы ✌️\n\n```\nИмя: %s\nНикнейм: @%s\nАйДи: %d\nТелефон: %s\n```",
+			userInfo := fmt.Sprintf("Вы уже зарегистрированы\n\n```\nИмя: %s\nНикнейм: @%s\nАйДи: %d\nТелефон: %s\n```",
 				fullName, existingUser.Username, existingUser.TgID, existingUser.Phone)
 			return c.Send(userInfo, &tele.SendOptions{ParseMode: tele.ModeMarkdown})
 		}
 		if err != mongo.ErrNoDocuments {
-			// Ошибка при проверке, но не "не найдено"
 			return c.Send("Ошибка при проверке регистрации")
 		}
 
@@ -46,7 +43,7 @@ func RegHandler(db *mongo.Database) tele.HandlerFunc {
 				OneTimeKeyboard: true,
 			}
 
-			btnContact := markup.Contact("📱 Поделиться номером телефона")
+			btnContact := markup.Contact("Поделиться номером телефона")
 			markup.Reply(
 				markup.Row(btnContact),
 			)
@@ -77,25 +74,34 @@ func RegHandler(db *mongo.Database) tele.HandlerFunc {
 		markup := &tele.ReplyMarkup{
 			RemoveKeyboard: true,
 		}
-		processingMsg, _ := c.Bot().Send(c.Recipient(), "Обрабатываю регистрацию...", markup)
 
-		result := mdbsvc.Reg(ctx, col, user, c)
+		result := reg.Reg(ctx, col, user, c)
 
-		if processingMsg != nil {
-			c.Bot().Delete(processingMsg)
-		}
+		if !result.AlreadyExists && result.User != nil {
+			c.Send("Регистрация прошла успешно!", markup)
 
-		if result.StickerMsg != nil {
-			c.Bot().Delete(result.StickerMsg)
-		}
-
-		c.Send(result.Message)
-
-		if result.User != nil {
 			fullName := fmt.Sprintf("%s %s", result.User.FirstName, result.User.LastName)
 			userInfo := fmt.Sprintf("```\nИмя: %s\nНикнейм: @%s\nАйДи: %d\nТелефон: %s\n```",
 				fullName, result.User.Username, result.User.TgID, result.User.Phone)
 			c.Send(userInfo, &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+
+			successSticker := &tele.Sticker{
+				File: tele.File{
+					FileID: "CAACAgIAAxkBAAET2MhpFGLaX_XtCRYw4ueP-UVpjhS2MwACJwADTlzSKVNP23ucCOn1NgQ",
+				},
+			}
+			c.Send(successSticker)
+
+			c.Send("*ВНИМАНИЕ! Используй бота только так:*\n\nОтправь фото\nУстанови имя: `=имя`\nДобавь тэги: `+тэг1, тэг2`\n\nПодробнее: /info", &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+		} else {
+			c.Send(result.Message, markup)
+
+			if result.User != nil {
+				fullName := fmt.Sprintf("%s %s", result.User.FirstName, result.User.LastName)
+				userInfo := fmt.Sprintf("```\nИмя: %s\nНикнейм: @%s\nАйДи: %d\nТелефон: %s\n```",
+					fullName, result.User.Username, result.User.TgID, result.User.Phone)
+				c.Send(userInfo, &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+			}
 		}
 
 		return nil

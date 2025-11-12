@@ -1,4 +1,4 @@
-package mdbsvc
+package reg
 
 import (
 	"context"
@@ -19,29 +19,27 @@ type RegResult struct {
 }
 
 func Reg(ctx context.Context, col *mongo.Collection, doc model.User, c tele.Context) RegResult {
-	var stickerMsg *tele.Message
-
 	err := command.Create(ctx, col, doc)
 	if err != nil {
 		if errors.Is(err, command.ErrAlreadyExists) {
 			existingUser, getErr := command.GetByID[model.User](ctx, col, doc.TgID)
 			if getErr == nil {
 				return RegResult{
-					Message:       "Пользователь уже зарегистрирован ✌️",
+					Message:       "Пользователь уже зарегистрирован",
 					StickerMsg:    nil,
 					User:          &existingUser,
 					AlreadyExists: true,
 				}
 			}
 			return RegResult{
-				Message:       "Пользователь уже зарегистрирован ✌️",
+				Message:       "Пользователь уже зарегистрирован",
 				StickerMsg:    nil,
 				User:          nil,
 				AlreadyExists: true,
 			}
 		}
 		return RegResult{
-			Message:       "Регистрация не удалась 😭",
+			Message:       "Регистрация не удалась",
 			StickerMsg:    nil,
 			User:          nil,
 			AlreadyExists: false,
@@ -53,13 +51,13 @@ func Reg(ctx context.Context, col *mongo.Collection, doc model.User, c tele.Cont
 			FileID: "CAACAgIAAxkBAAET15dpFELS7HJPrQeVTZJ96hhafk7rIAACcVcAAnBqIEuHSdQDdDCo-TYE",
 		},
 	}
-	stickerMsg, _ = c.Bot().Send(c.Recipient(), sticker)
+	c.Bot().Send(c.Recipient(), sticker)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	return RegResult{
-		Message:       "Регистрация прошла успешно 👌",
-		StickerMsg:    stickerMsg,
+		Message:       "",
+		StickerMsg:    nil,
 		User:          &doc,
 		AlreadyExists: false,
 	}

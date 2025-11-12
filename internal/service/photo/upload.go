@@ -33,14 +33,11 @@ func Upload(db *mongo.Database) func(c tele.Context) error {
 
 		col := db.Collection("photos")
 
-		// Проверяем, есть ли уже фото с таким FileUniqueID
 		existing, err := command.GetPhotoByFileUniqueID(ctx, col, photo.UniqueID)
 		if err == nil && existing != nil {
-			// Фото уже есть в базе
-			return c.Send("Это фото уже сохранено в базе")
+			return c.Send("Вы уже загружали это фото")
 		}
 		if err != nil {
-			// если это не ErrNoDocuments — логируем, но пытаемся вставить
 			if err != mongo.ErrNoDocuments {
 				log.Printf("warning: failed to check existing photo: %v", err)
 			}
@@ -52,6 +49,13 @@ func Upload(db *mongo.Database) func(c tele.Context) error {
 			return c.Send("Ошибка при сохранении фото")
 		}
 
-		return c.Send("Фото сохранено!\n\nТеперь добавьте имя: =имя\nИли тэги: +тэг1, тэг2 ответив на это сообщение")
+		sticker := &tele.Sticker{
+			File: tele.File{
+				FileID: "CAACAgIAAxkBAAET2MppFGMLH2LvK3ROmo1kqa84X59_IAACGAADTlzSKT5q3R61ronZNgQ",
+			},
+		}
+		c.Send(sticker)
+
+		return c.Send("Фото успешно загружено", &tele.SendOptions{ParseMode: tele.ModeMarkdown})
 	}
 }

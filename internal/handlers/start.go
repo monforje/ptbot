@@ -18,12 +18,19 @@ func StartHandler(db *mongo.Database) tele.HandlerFunc {
 			return c.Send("unable to retrieve user information")
 		}
 
+		sticker := &tele.Sticker{
+			File: tele.File{
+				FileID: "CAACAgIAAxkBAAET2MxpFGN1Gh-6VwFM7t6qkNIQAujK8AACFwADTlzSKeZelPOMymwmNgQ",
+			},
+		}
+		c.Send(sticker)
+
 		col := db.Collection("users")
 		result := tgsvc.Start(ctx, col, c.Sender().ID)
 
 		if !result.IsRegistered {
 			markup := &tele.ReplyMarkup{}
-			btnReg := markup.Data("📝 Зарегистрироваться", "reg_button")
+			btnReg := markup.Data("Зарегистрироваться", "reg_button")
 			markup.Inline(
 				markup.Row(btnReg),
 			)
